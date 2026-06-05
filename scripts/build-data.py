@@ -1,28 +1,32 @@
 import pandas as pd
 import json
 import os
-
-excel_file = (
-    "private-data/Lactate labeled metabolites.xlsx"
-)
+from pathlib import Path
 
 all_rows = []
 
-xls = pd.ExcelFile(excel_file)
+for excel_file in Path("private-data").glob("*.xlsx"):
 
-for sheet_name in xls.sheet_names:
+    print(f"Processing {excel_file.name}")
 
-    df = pd.read_excel(
-        excel_file,
-        sheet_name=sheet_name
-    )
+    xls = pd.ExcelFile(excel_file)
 
-    all_rows.extend(
-        df.fillna("")
-          .to_dict(orient="records")
-    )
+    for sheet_name in xls.sheet_names:
 
-os.makedirs("assets", exist_ok=True)
+        df = pd.read_excel(
+            excel_file,
+            sheet_name=sheet_name
+        )
+
+        all_rows.extend(
+            df.fillna("")
+              .to_dict(orient="records")
+        )
+
+os.makedirs(
+    "assets",
+    exist_ok=True
+)
 
 with open(
     "assets/data.json",
@@ -37,6 +41,5 @@ with open(
     )
 
 print(
-    f"Generated assets/data.json "
-    f"with {len(all_rows)} rows"
+    f"Generated {len(all_rows)} records"
 )
