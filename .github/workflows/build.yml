@@ -1,9 +1,21 @@
-name: Build Data
+name: Build and Deploy Pages
 
 on:
+
   push:
     branches:
       - main
+
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: true
 
 jobs:
 
@@ -13,12 +25,8 @@ jobs:
 
     steps:
 
-      # 下载公开仓库
-
       - name: Checkout website
         uses: actions/checkout@v4
-
-      # 下载私有仓库
 
       - name: Checkout private data
         uses: actions/checkout@v4
@@ -27,27 +35,44 @@ jobs:
           token: ${{ secrets.PRIVATE_REPO_TOKEN }}
           path: private-data
 
-      # Python
-
       - name: Setup Python
         uses: actions/setup-python@v5
         with:
           python-version: "3.12"
 
-      # 安装依赖
-
-      - name: Install packages
+      - name: Install dependencies
         run: |
           pip install pandas openpyxl
-
-      # 运行你的脚本
 
       - name: Generate JSON
         run: |
           python scripts/build-data.py
 
-      # 查看是否成功
-
-      - name: Check result
+      - name: Verify generated file
         run: |
-          ls assets
+          ls -lh assets/
+          wc -c assets/data.json
+
+      - name: Configure Pages
+        uses: actions/configure-pages@v5
+
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: .
+
+  deploy:
+
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+
+    needs: build
+
+    runs-on: ubuntu-latest
+
+    steps:
+
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
