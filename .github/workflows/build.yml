@@ -1,0 +1,53 @@
+name: Build Data
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+
+  build:
+
+    runs-on: ubuntu-latest
+
+    steps:
+
+      # 下载公开仓库
+
+      - name: Checkout website
+        uses: actions/checkout@v4
+
+      # 下载私有仓库
+
+      - name: Checkout private data
+        uses: actions/checkout@v4
+        with:
+          repository: llmspatial/private-data
+          token: ${{ secrets.PRIVATE_REPO_TOKEN }}
+          path: private-data
+
+      # Python
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      # 安装依赖
+
+      - name: Install packages
+        run: |
+          pip install pandas openpyxl
+
+      # 运行你的脚本
+
+      - name: Generate JSON
+        run: |
+          python scripts/build-data.py
+
+      # 查看是否成功
+
+      - name: Check result
+        run: |
+          ls assets
