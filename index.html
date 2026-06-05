@@ -259,43 +259,36 @@
 		async function loadExcel() {
 
 			const response = await fetch(
-				'data/Lactate labeled metabolites.xlsx'
+			    'assets/data.json'
 			);
-
-			const arrayBuffer = await response.arrayBuffer();
-
-			const workbook = XLSX.read(
-				arrayBuffer,
-				{ type: 'array' }
-			);
+			
+			allRows = await response.json();
 
 			const tracerSet = new Set();
 			const organSet = new Set();
 
-			workbook.SheetNames.forEach(sheetName => {
+			allRows.forEach(row => {
 
-				const sheet = workbook.Sheets[sheetName];
-
-				const data = XLSX.utils.sheet_to_json(sheet);
-
-				data.forEach(row => {
-
-					allRows.push(row);
-
-					if (row["Tracer"]) {
-						tracerSet.add(
-							String(row["Tracer"]).trim()
-						);
-					}
-
-					if (row["Organ"]) {
-						organSet.add(
-							String(row["Organ"]).trim()
-						);
-					}
-
-				});
-
+			    if (row["Tracer"]) {
+			
+			        tracerSet.add(
+			            String(
+			                row["Tracer"]
+			            ).trim()
+			        );
+			
+			    }
+			
+			    if (row["Organ"]) {
+			
+			        organSet.add(
+			            String(
+			                row["Organ"]
+			            ).trim()
+			        );
+			
+			    }
+			
 			});
 
 			populateSelect(
