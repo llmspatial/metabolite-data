@@ -3,8 +3,7 @@ import json
 import os
 
 excel_file = (
-    "private-data/"
-    "Lactate labeled metabolites.xlsx"
+    "private-data/Lactate labeled metabolites.xlsx"
 )
 
 all_rows = []
@@ -20,15 +19,10 @@ for sheet_name in xls.sheet_names:
 
     all_rows.extend(
         df.fillna("")
-          .to_dict(
-              orient="records"
-          )
+          .to_dict(orient="records")
     )
 
-os.makedirs(
-    "assets",
-    exist_ok=True
-)
+os.makedirs("assets", exist_ok=True)
 
 with open(
     "assets/data.json",
@@ -41,3 +35,8 @@ with open(
         f,
         ensure_ascii=False
     )
+
+print(
+    f"Generated assets/data.json "
+    f"with {len(all_rows)} rows"
+)
