@@ -1,0 +1,476 @@
+<!DOCTYPE HTML>
+<!--
+	Stellar by HTML5 UP
+	html5up.net | @ajlkn
+	Free for personal and commercial use under the CCA 3.0 license (html5up.net/license)
+-->
+<html>
+
+<head>
+	<title>Stellar by HTML5 UP</title>
+	<meta charset="utf-8" />
+	<meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no" />
+	<link rel="stylesheet" href="assets/css/main.css" />
+	<noscript>
+		<link rel="stylesheet" href="assets/css/noscript.css" />
+	</noscript>
+</head>
+
+<body class="is-preload">
+
+	<!-- Wrapper -->
+	<div id="wrapper">
+
+		<!-- Header -->
+		<header id="header" class="alt">
+			<span class="logo"><img src="images/logo1.png" alt="" /></span>
+			<h1><b>The Labeled Metabolite Data</b></h1>
+			<p>Institute of Materia Medica, Chinese Academy of Medical Science & Peking Union Medical College</p>
+		</header>
+
+		<!-- Nav -->
+		<nav id="nav">
+			<ul>
+				<li><a href="#intro" class="active">Introduction</a></li>
+				<li><a href="#search">Metabolite Search</a></li>
+			</ul>
+		</nav>
+
+		<!-- Main -->
+		<div id="main">
+
+			<section id="intro" class="main">
+				<header class="major">
+					<h2>Introduction</h2>
+				</header>
+
+				<p>This data is derived from non-targeted metabolites identified in multiple tissues of nude mice
+					following in vivo stable isotope tracing. The details of the stable isotope tracer experiment
+					are as follows:
+				</p>
+
+				<div style="text-align:center;">
+					<img style="width:70%;" src="images/intro.png" alt="" />
+				</div>
+			</section>
+
+
+			<section id="search" class="main">
+				<header class="major">
+					<h2>Enter metabolites of interest to quickly identify dynamic labeling patterns</h2>
+				</header>
+
+				<form id="search-form" method="post" action="#">
+					<div class="row gtr-uniform">
+						<div class="col-12">
+							<input type="text" name="compound-name" id="compound-name" value=""
+								placeholder="Compound Name (e.g., Lactate, Glutamate)" />
+						</div>
+						<div class="col-6 col-12-xsmall">
+							<select name="tracer-category" id="tracer-category">
+								<option value="">- Select Tracer -</option>
+								<!-- <option value="1">Manufacturing</option> -->
+							</select>
+						</div>
+						<div class="col-6 col-12-xsmall">
+							<select name="organ-category" id="organ-category">
+								<option value="">- Select Organ -</option>
+							</select>
+						</div>
+
+						<div class="col-12">
+							<ul class="actions special">
+								<li><input type="submit" value="Search" class="primary" /></li>
+								<li><input type="reset" value="Reset" /></li>
+							</ul>
+						</div>
+					</div>
+				</form>
+
+				<div class="table-wrapper" id="result-wrapper" style="display:none;">
+					<table id="result-table">
+						<thead>
+							<tr>
+								<th>Compound Name</th>
+								<th>Tracer</th>
+								<th>Organ</th>
+							</tr>
+						</thead>
+						<tbody id="result-body">
+							<!-- <tr>
+								<td>Item One</td>
+								<td>Ante turpis integer aliquet porttitor.</td>
+								<td>29.99</td>
+							</tr> -->
+						</tbody>
+					</table>
+				</div>
+
+
+
+
+				<!-- <ul class="actions">
+					<li><a href="#" class="button modal-trigger">Sed lorem ipsum</a></li>
+				</ul>
+
+				<ul class="actions">
+					<li><a href="#" class="button modal-trigger">sit amet nullam</a></li>
+				</ul>
+
+				<ul class="actions">
+					<li><a href="#" class="button modal-trigger">consequat feugiat</a></li>
+				</ul>
+
+				<ul class="actions">
+					<li><a href="#" class="button modal-trigger">adipiscing magna</a></li>
+				</ul> -->
+			</section>
+
+
+		</div>
+
+		<!-- Footer -->
+		<footer id="footer">
+			<p class="copyright" style="font-size: 1em;"><b>E-mail:</b> Tingli2019@outlook.com<br />
+				<b>Address:</b> 1 Xian Nong Tan Street, Beijing 100050, China.</p>
+			<!-- <p class="copyright">&copy; Untitled. Design: <a href="https://html5up.net">HTML5 UP</a>.</p> -->
+		</footer>
+
+	</div>
+
+	<!-- Scripts -->
+	<script src="assets/js/jquery.min.js"></script>
+	<script src="assets/js/jquery.scrollex.min.js"></script>
+	<script src="assets/js/jquery.scrolly.min.js"></script>
+	<script src="assets/js/browser.min.js"></script>
+	<script src="assets/js/breakpoints.min.js"></script>
+	<script src="assets/js/util.js"></script>
+	<script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script>
+	<!-- <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script> -->
+	<script src="assets/js/main.js"></script>
+
+	<link rel="stylesheet" href="https://cdn.datatables.net/1.13.8/css/jquery.dataTables.min.css">
+	<script src="https://cdn.datatables.net/1.13.8/js/jquery.dataTables.min.js"></script>
+
+
+
+	<!-- 弹窗 -->
+	<div id="customModal">
+		<div class="modal-panel">
+			<div class="modal-header">
+				<div id="modalTitle">
+					Title
+				</div>
+				<div id="modalClose">
+					&times;
+				</div>
+			</div>
+
+			<div class="modal-body">
+				<div id="modalContent">
+					<h2>Ipsum sed adipiscing</h2>
+
+					<p>
+						Sed lorem ipsum dolor sit amet nullam consequat feugiat consequat magna
+						adipiscing magna etiam amet veroeros. Lorem ipsum dolor tempus sit cursus.
+						Tempus nisl et nullam lorem ipsum dolor sit amet aliquam.
+					</p>
+					<p>
+						Sed lorem ipsum dolor sit amet nullam consequat feugiat consequat magna
+						adipiscing magna etiam amet veroeros. Lorem ipsum dolor tempus sit cursus.
+						Tempus nisl et nullam lorem ipsum dolor sit amet aliquam.
+					</p>
+					<p>
+						Sed lorem ipsum dolor sit amet nullam consequat feugiat consequat magna
+						adipiscing magna etiam amet veroeros. Lorem ipsum dolor tempus sit cursus.
+						Tempus nisl et nullam lorem ipsum dolor sit amet aliquam.
+					</p>
+					<p>
+						Sed lorem ipsum dolor sit amet nullam consequat feugiat consequat magna
+						adipiscing magna etiam amet veroeros. Lorem ipsum dolor tempus sit cursus.
+						Tempus nisl et nullam lorem ipsum dolor sit amet aliquam.
+					</p>
+					<p>
+						Sed lorem ipsum dolor sit amet nullam consequat feugiat consequat magna
+						adipiscing magna etiam amet veroeros. Lorem ipsum dolor tempus sit cursus.
+						Tempus nisl et nullam lorem ipsum dolor sit amet aliquam.
+					</p>
+
+				</div>
+			</div>
+		</div>
+	</div>
+
+	<script>
+		const modal = document.getElementById('customModal');
+		const modalTitle = document.getElementById('modalTitle');
+		const modalContent = document.getElementById('modalContent');
+		const closeBtn = document.getElementById('modalClose');
+
+		/* 绑定按钮 */
+
+		document.querySelectorAll('.modal-trigger').forEach(btn => {
+			btn.addEventListener('click', function (e) {
+				e.preventDefault();
+				const title = this.textContent.trim();
+				modalTitle.textContent = title;
+
+				// 显示弹窗
+				modal.classList.add('show');
+				// 锁定背景
+				document.body.classList.add('modal-open');
+			});
+
+		});
+
+		/* 关闭 */
+		function closeModal() {
+			modal.classList.remove('show');
+			document.body.classList.remove('modal-open');
+		}
+
+		closeBtn.addEventListener('click', closeModal);
+
+		/* 点击背景关闭 */
+		modal.addEventListener('click', function (e) {
+			if (e.target === modal) {
+				closeModal();
+			}
+		});
+
+		/* ESC关闭 */
+		document.addEventListener('keydown', function (e) {
+			if (e.key === 'Escape') {
+				closeModal();
+			}
+		});
+
+	</script>
+
+
+
+	<script>
+
+		let allRows = [];
+		let dataTable = null;
+
+		// 读取Excel
+		async function loadExcel() {
+
+			const response = await fetch(
+				'data/Lactate labeled metabolites.xlsx'
+			);
+
+			const arrayBuffer = await response.arrayBuffer();
+
+			const workbook = XLSX.read(
+				arrayBuffer,
+				{ type: 'array' }
+			);
+
+			const tracerSet = new Set();
+			const organSet = new Set();
+
+			workbook.SheetNames.forEach(sheetName => {
+
+				const sheet = workbook.Sheets[sheetName];
+
+				const data = XLSX.utils.sheet_to_json(sheet);
+
+				data.forEach(row => {
+
+					allRows.push(row);
+
+					if (row["Tracer"]) {
+						tracerSet.add(
+							String(row["Tracer"]).trim()
+						);
+					}
+
+					if (row["Organ"]) {
+						organSet.add(
+							String(row["Organ"]).trim()
+						);
+					}
+
+				});
+
+			});
+
+			populateSelect(
+				"tracer-category",
+				[...tracerSet].sort()
+			);
+
+			populateSelect(
+				"organ-category",
+				[...organSet].sort()
+			);
+
+			console.log(
+				"Excel loaded:",
+				allRows.length,
+				"rows"
+			);
+
+		}
+
+		function initTable() {
+
+			dataTable = $('#result-table').DataTable({
+				autoWidth: false,
+				pageLength: 10,
+				lengthChange: false,
+				searching: false,
+				ordering: false,
+				info: true,
+				deferRender: true,
+				data: [],
+				columns: [
+					{ data: "Compound Name" },
+					{ data: "Tracer" },
+					{ data: "Organ" }
+				]
+			});
+		}
+
+		// 填充下拉框
+		function populateSelect(id, values) {
+
+			const select =
+				document.getElementById(id);
+
+			values.forEach(value => {
+
+				const option =
+					document.createElement("option");
+
+				option.value = value;
+				option.textContent = value;
+
+				select.appendChild(option);
+
+			});
+
+		}
+
+		// 搜索
+		document
+			.getElementById("search-form")
+			.addEventListener("submit", function (e) {
+
+				e.preventDefault();
+
+				const compound =
+					document
+						.getElementById("compound-name")
+						.value
+						.trim();
+
+				const tracer =
+					document
+						.getElementById("tracer-category")
+						.value;
+
+				const organ =
+					document
+						.getElementById("organ-category")
+						.value;
+
+				console.log("compound:", compound);
+				console.log("tracer:", tracer);
+				console.log("organ:", organ);
+
+				// compound为空
+				if (!compound) {
+
+					alert(
+						"Please input Compound Name."
+					);
+
+					return;
+				}
+
+				const keyword =
+					compound.toLowerCase();
+
+				const result = allRows.filter(row => {
+
+					const compoundName =
+						String(
+							row["Compound Name"] || ""
+						).toLowerCase();
+
+					// 模糊匹配 Compound Name
+					if (
+						!compoundName.includes(keyword)
+					) {
+						return false;
+					}
+
+					// Tracer 精确匹配
+					if (
+						tracer &&
+						row["Tracer"] !== tracer
+					) {
+						return false;
+					}
+
+					// Organ 精确匹配
+					if (
+						organ &&
+						row["Organ"] !== organ
+					) {
+						return false;
+					}
+
+					return true;
+
+				});
+
+				renderTable(result);
+
+			});
+
+		// 渲染结果表格
+		function renderTable(rows) {
+
+			const wrapper = document.getElementById("result-wrapper");
+
+			// 去重
+			const seen = new Set();
+
+			const uniqueRows = rows.filter(row => {
+
+				const key =
+					`${row["Compound Name"] || ""}||` +
+					`${row["Tracer"] || ""}||` +
+					`${row["Organ"] || ""}`;
+
+				if (seen.has(key)) return false;
+
+				seen.add(key);
+
+				return true;
+			});
+
+			wrapper.style.display = "block";
+
+			if (!dataTable) return;
+
+			// 关键：直接更新数据，不重建表格
+			dataTable.clear();
+			dataTable.rows.add(uniqueRows);
+			dataTable.draw();
+		}
+
+		// 页面加载时读取Excel
+		loadExcel();
+		initTable();
+
+	</script>
+
+
+</body>
+
+</html>
