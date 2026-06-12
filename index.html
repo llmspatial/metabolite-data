@@ -168,6 +168,9 @@
 		const modalTitle = document.getElementById('modalTitle');
 		const modalContent = document.getElementById('modalContent');
 		const closeBtn = document.getElementById('modalClose');
+		// 用于释放ECharts和Observer对象
+		let allCharts = [];
+		let allObservers = [];
 
 		/* 使用事件委托绑定弹窗 */
 		document.addEventListener('click', function (e) {
@@ -195,6 +198,19 @@
 
 		/* 关闭 */
 		function closeModal() {
+			allObservers.forEach(o => o.disconnect());
+			allCharts.forEach(chart => {
+		        if (
+		            chart &&
+		            !chart.isDisposed()
+		        ) {
+		            chart.dispose();
+		        }
+		    });
+			allObservers = [];
+		    allCharts = [];
+		    modalContent.innerHTML = '';
+			
 			modal.classList.remove('show');
 			document.body.classList.remove('modal-open');
 		}
@@ -215,11 +231,6 @@
 			}
 		});
 
-	</script>
-
-
-
-	<script>
 
 		let allRows = [];
 		let allColumns = [];
@@ -352,6 +363,7 @@
 				});
 
 			observer.observe(dom);
+			allObservers.push(observer);
 
 			return chart;
 		}
@@ -434,6 +446,8 @@
 					data: values
 				}]
 			});
+
+			allCharts.push(chart);
 		}
 
 		// 图 Case2：compound + tracer
