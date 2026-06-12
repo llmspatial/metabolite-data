@@ -88,42 +88,27 @@
 					</div>
 				</form>
 
+				<div id="compound-list" style="display:none;">
+					<h3><b>All matched compounds:</b></h3>
+					<ul class="actions" id="compound-actions"></ul>
+				</div>
+
+				<div id="result-header" style="display:none;">
+					<h3><b>Search results:</b></h3>
+
+					<a id="download-btn" class="button primary small">
+						Download
+					</a>
+				</div>
 				<div class="table-wrapper" id="result-wrapper" style="display:none;">
 					<table id="result-table">
-						<thead>
-							<tr>
-								<th>Compound Name</th>
-								<th>Tracer</th>
-								<th>Organ</th>
-							</tr>
-						</thead>
-						<tbody id="result-body">
-							<!-- <tr>
-								<td>Item One</td>
-								<td>Ante turpis integer aliquet porttitor.</td>
-								<td>29.99</td>
-							</tr> -->
-						</tbody>
 					</table>
 				</div>
 
 
 
-
 				<!-- <ul class="actions">
 					<li><a href="#" class="button modal-trigger">Sed lorem ipsum</a></li>
-				</ul>
-
-				<ul class="actions">
-					<li><a href="#" class="button modal-trigger">sit amet nullam</a></li>
-				</ul>
-
-				<ul class="actions">
-					<li><a href="#" class="button modal-trigger">consequat feugiat</a></li>
-				</ul>
-
-				<ul class="actions">
-					<li><a href="#" class="button modal-trigger">adipiscing magna</a></li>
 				</ul> -->
 			</section>
 
@@ -133,7 +118,8 @@
 		<!-- Footer -->
 		<footer id="footer">
 			<p class="copyright" style="font-size: 1em;"><b>E-mail:</b> Tingli2019@outlook.com<br />
-				<b>Address:</b> 1 Xian Nong Tan Street, Beijing 100050, China.</p>
+				<b>Address:</b> 1 Xian Nong Tan Street, Beijing 100050, China.
+			</p>
 			<!-- <p class="copyright">&copy; Untitled. Design: <a href="https://html5up.net">HTML5 UP</a>.</p> -->
 		</footer>
 
@@ -153,6 +139,9 @@
 	<link rel="stylesheet" href="https://cdn.datatables.net/1.13.8/css/jquery.dataTables.min.css">
 	<script src="https://cdn.datatables.net/1.13.8/js/jquery.dataTables.min.js"></script>
 
+	<script src="https://cdn.jsdelivr.net/npm/echarts@5/dist/echarts.min.js"></script>
+	<script src="https://cdn.jsdelivr.net/npm/echarts/theme/macarons.js"></script>
+
 
 
 	<!-- 弹窗 -->
@@ -169,34 +158,6 @@
 
 			<div class="modal-body">
 				<div id="modalContent">
-					<h2>Ipsum sed adipiscing</h2>
-
-					<p>
-						Sed lorem ipsum dolor sit amet nullam consequat feugiat consequat magna
-						adipiscing magna etiam amet veroeros. Lorem ipsum dolor tempus sit cursus.
-						Tempus nisl et nullam lorem ipsum dolor sit amet aliquam.
-					</p>
-					<p>
-						Sed lorem ipsum dolor sit amet nullam consequat feugiat consequat magna
-						adipiscing magna etiam amet veroeros. Lorem ipsum dolor tempus sit cursus.
-						Tempus nisl et nullam lorem ipsum dolor sit amet aliquam.
-					</p>
-					<p>
-						Sed lorem ipsum dolor sit amet nullam consequat feugiat consequat magna
-						adipiscing magna etiam amet veroeros. Lorem ipsum dolor tempus sit cursus.
-						Tempus nisl et nullam lorem ipsum dolor sit amet aliquam.
-					</p>
-					<p>
-						Sed lorem ipsum dolor sit amet nullam consequat feugiat consequat magna
-						adipiscing magna etiam amet veroeros. Lorem ipsum dolor tempus sit cursus.
-						Tempus nisl et nullam lorem ipsum dolor sit amet aliquam.
-					</p>
-					<p>
-						Sed lorem ipsum dolor sit amet nullam consequat feugiat consequat magna
-						adipiscing magna etiam amet veroeros. Lorem ipsum dolor tempus sit cursus.
-						Tempus nisl et nullam lorem ipsum dolor sit amet aliquam.
-					</p>
-
 				</div>
 			</div>
 		</div>
@@ -208,20 +169,28 @@
 		const modalContent = document.getElementById('modalContent');
 		const closeBtn = document.getElementById('modalClose');
 
-		/* 绑定按钮 */
+		/* 使用事件委托绑定弹窗 */
+		document.addEventListener('click', function (e) {
+			const btn = e.target.closest('.modal-trigger');
+			if (!btn) {
+				return;
+			}
+			e.preventDefault();
+			const title = btn.dataset.compound || btn.textContent.trim();
+			modalTitle.textContent = title;
 
-		document.querySelectorAll('.modal-trigger').forEach(btn => {
-			btn.addEventListener('click', function (e) {
-				e.preventDefault();
-				const title = this.textContent.trim();
-				modalTitle.textContent = title;
+			// 显示弹窗
+			modal.classList.add('show');
+			// 锁定背景
+			document.body.classList.add('modal-open');
 
-				// 显示弹窗
-				modal.classList.add('show');
-				// 锁定背景
-				document.body.classList.add('modal-open');
-			});
+			setTimeout(() => {
+				drawCompoundCharts(title);
+			}, 100);
 
+			// setTimeout(() => {
+			// 	window.dispatchEvent(new Event('resize'));
+			// }, 200);
 		});
 
 		/* 关闭 */
@@ -253,8 +222,433 @@
 	<script>
 
 		let allRows = [];
+		let allColumns = [];
 		let dataTable = null;
 
+		const compoundIsotopeMap = {};
+		const allTracerList = new Set();
+		const allOrganList = new Set();
+
+		const ORGAN_ORDER = [
+			"Serum",
+			"BAT",
+			"Brain",
+			"Heart",
+			"Kidney",
+			"Liver",
+			"Lung",
+			"Muscle",
+			"Pancreas",
+			"Spleen"
+		];
+
+		// isotope排序
+		function getSortedIsotopes(compound) {
+			const list =
+				[...(compoundIsotopeMap[compound] || [])];
+
+			return list.sort((a, b) => {
+
+				const na =
+					parseInt(a.replace("M", "")) || 0;
+
+				const nb =
+					parseInt(b.replace("M", "")) || 0;
+
+				return na - nb;
+
+			});
+		}
+
+		// 获取当前搜索条件
+		function getCurrentFilters() {
+
+			return {
+
+				compound:
+					document
+						.getElementById("compound-name")
+						.value
+						.trim(),
+
+				tracer:
+					document
+						.getElementById("tracer-category")
+						.value,
+
+				organ:
+					document
+						.getElementById("organ-category")
+						.value
+
+			};
+		}
+
+		// 图表总入口
+		function drawCompoundCharts(compound) {
+
+			const {
+				tracer,
+				organ
+			} = getCurrentFilters();
+
+			modalContent.innerHTML = "";
+
+			if (tracer && organ) {
+
+				createChartContainer("chart1");
+
+				drawCase1(
+					compound,
+					tracer,
+					organ,
+					"chart1"
+				);
+
+				return;
+			}
+
+			if (tracer && !organ) {
+
+				createChartContainer("chart1");
+
+				drawCase2(
+					compound,
+					tracer,
+					"chart1"
+				);
+
+				return;
+			}
+
+			if (!tracer && organ) {
+
+				createChartContainer("chart1");
+
+				drawCase3(
+					compound,
+					organ,
+					"chart1"
+				);
+
+				return;
+			}
+
+			drawCase4(compound);
+		}
+
+		function initChart(chartId) {
+
+			const dom =
+				document.getElementById(chartId);
+
+			const chart =
+				// echarts.init(dom);
+				echarts.init(dom, 'macarons');
+
+			const observer =
+				new ResizeObserver(() => {
+					chart.resize();
+				});
+
+			observer.observe(dom);
+
+			return chart;
+		}
+
+		// 创建图容器
+		function createChartContainer(id) {
+
+			const div =
+				document.createElement("div");
+
+			div.id = id;
+
+			div.style.width = "100%";
+			div.style.height = "600px";
+			div.style.marginBottom = "30px";
+
+			modalContent.appendChild(div);
+		}
+
+		// 图 Case1：compound + tracer + organ
+		function drawCase1(
+			compound,
+			tracer,
+			organ,
+			chartId
+		) {
+
+			const isotopes =
+				getSortedIsotopes(compound);
+
+			const values =
+				isotopes.map(iso => {
+
+					const row =
+						allRows.find(r =>
+							r["Compound Name"] === compound &&
+							r["Tracer"] === tracer &&
+							r["Organ"] === organ &&
+							r["Isosotope"] === iso
+						);
+
+					return Number(
+						row?.["Label Fraction"] || 0
+					);
+				});
+
+			const chart = initChart(chartId);
+
+			chart.setOption({
+
+				title: {
+					text: `${compound} & ${tracer} & ${organ}`,
+					left: 'center',
+					textStyle: {
+						fontSize: 16
+					}
+				},
+
+				tooltip: {
+					trigger: "axis"
+				},
+
+				xAxis: {
+					type: "category",
+					data: isotopes
+				},
+
+				yAxis: {
+					type: "value",
+					name: "Label Fraction",
+					nameLocation: "middle",
+					nameGap: 50,
+					nameTextStyle: {
+						fontSize: 14
+					}
+				},
+
+				series: [{
+					type: "bar",
+					data: values
+				}]
+			});
+		}
+
+		// 图 Case2：compound + tracer
+		function drawCase2(
+			compound,
+			tracer,
+			chartId
+		) {
+
+			const isotopes =
+				getSortedIsotopes(compound);
+
+			const series =
+				isotopes.map(iso => {
+
+					return {
+
+						name: iso,
+						type: "bar",
+						stack: "total",
+
+						data:
+							ORGAN_ORDER.map(org => {
+
+								const row =
+									allRows.find(r =>
+										r["Compound Name"] === compound &&
+										r["Tracer"] === tracer &&
+										r["Organ"] === org &&
+										r["Isosotope"] === iso
+									);
+
+								return Number(
+									row?.["Label Fraction"] || 0
+								);
+							})
+
+					};
+
+				});
+
+			const chart = initChart(chartId);
+
+			chart.setOption({
+
+				title: {
+					text: `${compound} & ${tracer}`,
+					left: 'center',
+					top: 10,
+					textStyle: {
+						fontSize: 16
+					}
+				},
+
+				tooltip: {
+					trigger: "axis"
+				},
+
+				legend: {
+					top: 45,
+					left: 'center',
+					type: 'scroll'
+				},
+
+				grid: {
+					top: 110,
+					left: 80,
+					right: 40,
+					bottom: 70
+				},
+
+				xAxis: {
+					type: "category",
+					data: ORGAN_ORDER
+				},
+
+				yAxis: {
+					type: "value",
+					name: "Label Fraction",
+					nameLocation: "middle",
+					nameGap: 50,
+					nameTextStyle: {
+						fontSize: 14
+					}
+				},
+
+				series
+			});
+		}
+
+		// 图 Case3：compound + organ
+		function drawCase3(
+			compound,
+			organ,
+			chartId
+		) {
+
+			const tracers =
+				[...allTracerList].sort();
+
+			const isotopes =
+				getSortedIsotopes(compound);
+
+			const series =
+				isotopes.map(iso => ({
+
+					name: iso,
+					type: "bar",
+					stack: "total",
+
+					data:
+						tracers.map(tracer => {
+
+							const row =
+								allRows.find(r =>
+									r["Compound Name"] === compound &&
+									r["Tracer"] === tracer &&
+									r["Organ"] === organ &&
+									r["Isosotope"] === iso
+								);
+
+							return Number(
+								row?.["Label Fraction"] || 0
+							);
+						})
+
+				}));
+
+			const chart = initChart(chartId);
+
+			chart.setOption({
+
+				title: {
+					text:
+						`${compound} & ${organ}`,
+						left: 'center',
+						top: 10,
+						textStyle: {
+							fontSize: 16
+						}
+				},
+
+				tooltip: {
+					trigger: "axis"
+				},
+
+				legend: {
+					top: 45,
+					left: 'center',
+					type: 'scroll'
+				},
+
+				grid: {
+					top: 110,
+					left: 80,
+					right: 40,
+					bottom: 70
+				},
+
+				xAxis: {
+					type: "category",
+					data: tracers
+				},
+
+				yAxis: {
+					type: "value",
+					name: "Label Fraction",
+					nameLocation: "middle",
+					nameGap: 50,
+					nameTextStyle: {
+						fontSize: 14
+					}
+				},
+
+				series
+			});
+		}
+
+		// 图 Case4：仅compound
+		function drawCase4(compound) {
+
+			[...allTracerList]
+				.sort()
+				.forEach((tracer, idx) => {
+
+					const id =
+						`tracerChart_${idx}`;
+
+					createChartContainer(id);
+
+					drawCase2(
+						compound,
+						tracer,
+						id
+					);
+
+				});
+
+			ORGAN_ORDER.forEach((organ, idx) => {
+
+				const id =
+					`organChart_${idx}`;
+
+				createChartContainer(id);
+
+				drawCase3(
+					compound,
+					organ,
+					id
+				);
+
+			});
+		}
+
+		
 		// 读取Excel
 		async function loadExcel() {
 
