@@ -235,6 +235,8 @@
 		let allRows = [];
 		let allColumns = [];
 		let dataTable = null;
+		// 建立索引，用于画图
+		let fractionIndex = {};
 
 		const compoundIsotopeMap = {};
 		const allTracerList = new Set();
@@ -396,17 +398,11 @@
 
 			const values =
 				isotopes.map(iso => {
-
-					const row =
-						allRows.find(r =>
-							r["Compound Name"] === compound &&
-							r["Tracer"] === tracer &&
-							r["Organ"] === organ &&
-							r["Isosotope"] === iso
-						);
-
-					return Number(
-						row?.["Label Fraction"] || 0
+					return getFraction(
+					    compound,
+					    tracer,
+					    organ,
+					    iso
 					);
 				});
 
@@ -471,17 +467,11 @@
 
 						data:
 							ORGAN_ORDER.map(org => {
-
-								const row =
-									allRows.find(r =>
-										r["Compound Name"] === compound &&
-										r["Tracer"] === tracer &&
-										r["Organ"] === org &&
-										r["Isosotope"] === iso
-									);
-
-								return Number(
-									row?.["Label Fraction"] || 0
+								return getFraction(
+								    compound,
+								    tracer,
+								    organ,
+								    iso
 								);
 							})
 
@@ -560,17 +550,11 @@
 
 					data:
 						tracers.map(tracer => {
-
-							const row =
-								allRows.find(r =>
-									r["Compound Name"] === compound &&
-									r["Tracer"] === tracer &&
-									r["Organ"] === organ &&
-									r["Isosotope"] === iso
-								);
-
-							return Number(
-								row?.["Label Fraction"] || 0
+							return getFraction(
+							    compound,
+							    tracer,
+							    organ,
+							    iso
 							);
 						})
 
@@ -691,6 +675,15 @@
 				const organ =
 					String(row["Organ"] || "").trim();
 
+				const fraction =
+			        Number(row["Label Fraction"] || 0);
+				// ===== 建立索引 =====
+
+			    const key =
+			        `${compound}|${tracer}|${organ}|${isotope}`;
+			
+			    fractionIndex[key] = fraction;
+
 				if (compound && isotope) {
 
 					if (!compoundIsotopeMap[compound]) {
@@ -755,6 +748,20 @@
 				data: [],
 				columns: columnDefs
 			});
+		}
+
+		// 使用索引的查询函数
+		function getFraction(
+		    compound,
+		    tracer,
+		    organ,
+		    isotope
+		) {
+		
+		    const key =
+		        `${compound}|${tracer}|${organ}|${isotope}`;
+		
+		    return fractionIndex[key] || 0;
 		}
 
 		// 填充下拉框
