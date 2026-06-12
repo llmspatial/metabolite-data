@@ -656,32 +656,45 @@
 			    'assets/data.json'
 			);
 			
-			allRows = await response.json();
+			const data = await response.json();
+			allColumns = data.columns;
+			allRows = data.rows;
 
 			const tracerSet = new Set();
 			const organSet = new Set();
 
 			allRows.forEach(row => {
 
-			    if (row["Tracer"]) {
-			
-			        tracerSet.add(
-			            String(
-			                row["Tracer"]
-			            ).trim()
-			        );
-			
-			    }
-			
-			    if (row["Organ"]) {
-			
-			        organSet.add(
-			            String(
-			                row["Organ"]
-			            ).trim()
-			        );
-			
-			    }
+			    const compound =
+					String(row["Compound Name"] || "").trim();
+
+				const isotope =
+					String(row["Isosotope"] || "").trim();
+
+				const tracer =
+					String(row["Tracer"] || "").trim();
+
+				const organ =
+					String(row["Organ"] || "").trim();
+
+				if (compound && isotope) {
+
+					if (!compoundIsotopeMap[compound]) {
+						compoundIsotopeMap[compound] = new Set();
+					}
+
+					compoundIsotopeMap[compound].add(isotope);
+				}
+
+				if (tracer) {
+					tracerSet.add(tracer);
+					allTracerList.add(tracer);
+				}
+
+				if (organ) {
+					organSet.add(organ);
+					allOrganList.add(organ);
+				}
 			
 			});
 
@@ -695,30 +708,38 @@
 				[...organSet].sort()
 			);
 
+			initTable(allColumns);
+
 			console.log(
 				"Excel loaded:",
 				allRows.length,
 				"rows"
 			);
-
+			console.log(compoundIsotopeMap)
+			console.log(allTracerList)
+			console.log(allOrganList)
 		}
 
-		function initTable() {
+		function initTable(columns) {
+
+			const columnDefs = columns.map(col => ({
+				title: col,
+				data: col,
+				defaultContent: ""
+			}));
 
 			dataTable = $('#result-table').DataTable({
+				scrollX: true,
+    			scrollCollapse: true,
 				autoWidth: false,
-				pageLength: 10,
+				pageLength: 5,
 				lengthChange: false,
 				searching: false,
 				ordering: false,
 				info: true,
 				deferRender: true,
 				data: [],
-				columns: [
-					{ data: "Compound Name" },
-					{ data: "Tracer" },
-					{ data: "Organ" }
-				]
+				columns: columnDefs
 			});
 		}
 
@@ -816,45 +837,99 @@
 
 				});
 
+				renderCompoundList(result);
 				renderTable(result);
 
 			});
 
+		function renderCompoundList(rows) {
+
+			const container =
+				document.getElementById("compound-actions");
+
+			container.innerHTML = "";
+
+			const compounds = [
+				...new Set(
+					rows.map(
+						row => row["Compound Name"]
+					)
+				)
+			];
+
+			compounds.forEach(compound => {
+
+				const li =
+					document.createElement("li");
+
+				li.innerHTML = `
+					<a href="#"
+					class="button modal-trigger"
+					data-compound="${compound}">
+						${compound}
+					</a>
+				`;
+
+				container.appendChild(li);
+
+			});
+
+			document
+				.getElementById("compound-list")
+				.style.display = "block";
+		}
+
 		// 渲染结果表格
 		function renderTable(rows) {
 
+			document.getElementById("result-header").style.display = "flex";
 			const wrapper = document.getElementById("result-wrapper");
-
-			// 去重
-			const seen = new Set();
-
-			const uniqueRows = rows.filter(row => {
-
-				const key =
-					`${row["Compound Name"] || ""}||` +
-					`${row["Tracer"] || ""}||` +
-					`${row["Organ"] || ""}`;
-
-				if (seen.has(key)) return false;
-
-				seen.add(key);
-
-				return true;
-			});
-
 			wrapper.style.display = "block";
 
 			if (!dataTable) return;
 
+			// ===== 保证字段完整（防 DataTables undefined）=====
+			const normalizedRows = rows.map(row => {
+
+				const obj = {};
+
+				allColumns.forEach(col => {
+					obj[col] = row[col] ?? "";
+				});
+
+				return obj;
+			});
+
 			// 关键：直接更新数据，不重建表格
 			dataTable.clear();
-			dataTable.rows.add(uniqueRows);
+			dataTable.rows.add(normalizedRows);
 			dataTable.draw();
 		}
 
+		// 下载搜索结果
+		document.getElementById("download-btn").addEventListener("click", function () {
+			const data = dataTable
+				.rows({ search: "applied" })
+				.data()
+				.toArray();
+
+			const worksheet = XLSX.utils.json_to_sheet(data);
+			const workbook = XLSX.utils.book_new();
+
+			XLSX.utils.book_append_sheet(
+				workbook,
+				worksheet,
+				"Search Results"
+			);
+
+			XLSX.writeFile(
+				workbook,
+				"metabolite_results.xlsx"
+			);
+		});
+
 		// 页面加载时读取Excel
 		loadExcel();
-		initTable();
 
 	</script>
 
