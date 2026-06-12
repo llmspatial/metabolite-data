@@ -3814,8 +3814,8 @@ input, select, textarea {
 
 .modal-panel {
 
-    width: 90%;
-    max-width: 1000px;
+    width:95vw;
+    max-width: 1200px;
 
     height: 85vh;
 
@@ -3858,6 +3858,11 @@ input, select, textarea {
     font-weight: 700;
 
     color: #000;
+}
+
+#modalContent{
+    width:100%;
+    min-width:0;
 }
 
 /* 关闭按钮 */
@@ -3911,5 +3916,20 @@ body.modal-open {
 }
 
 
+#compound-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5em;
+}
 
+#compound-actions li {
+    margin: 0;
+}
+
+#result-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1em;
+}
 
