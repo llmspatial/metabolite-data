@@ -4,6 +4,7 @@ import os
 from pathlib import Path
 
 all_rows = []
+all_columns = []
 
 for excel_file in Path("private-data").glob("*.xlsx"):
 
@@ -18,6 +19,9 @@ for excel_file in Path("private-data").glob("*.xlsx"):
             sheet_name=sheet_name
         )
 
+        if not all_columns:
+            all_columns = list(df.columns)
+
         all_rows.extend(
             df.fillna("")
               .to_dict(orient="records")
@@ -28,6 +32,11 @@ os.makedirs(
     exist_ok=True
 )
 
+output = {
+    "columns": all_columns,
+    "rows": all_rows
+}
+
 with open(
     "assets/data.json",
     "w",
@@ -35,7 +44,7 @@ with open(
 ) as f:
 
     json.dump(
-        all_rows,
+        output,
         f,
         ensure_ascii=False
     )
