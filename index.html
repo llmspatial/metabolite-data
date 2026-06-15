@@ -732,7 +732,30 @@
 			const columnDefs = columns.map(col => ({
 				title: col,
 				data: col,
-				defaultContent: ""
+				defaultContent: "",
+
+				// 将表格中的数据格式化，统一小数位数
+				render: function(data, type, row) {
+					// 排序和搜索时仍使用原始值
+					if (type !== "display") {
+						return data;
+					}
+
+					if (data !== "" && data != null) {
+						if (col === "rt") {
+							return Number(data).toFixed(2);
+						}
+
+						if (
+							col === "mz" ||
+							col === "Label Fraction"
+						) {
+							return Number(data).toFixed(4);
+						}
+					}
+
+					return data;
+				}
 			}));
 
 			dataTable = $('#result-table').DataTable({
