@@ -19,6 +19,25 @@ for excel_file in Path("private-data").glob("*.xlsx"):
             sheet_name=sheet_name
         )
 
+        # 保留小数位数
+        if "rt" in df.columns:
+            df["rt"] = pd.to_numeric(
+                df["rt"],
+                errors="coerce"
+            ).round(2)
+
+        if "mz" in df.columns:
+            df["mz"] = pd.to_numeric(
+                df["mz"],
+                errors="coerce"
+            ).round(4)
+
+        if "Label Fraction" in df.columns:
+            df["Label Fraction"] = pd.to_numeric(
+                df["Label Fraction"],
+                errors="coerce"
+            ).round(4)
+
         if not all_columns:
             all_columns = list(df.columns)
 
